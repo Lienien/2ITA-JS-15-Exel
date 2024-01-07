@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Reading</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.4/dist/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #input {
+            margin-bottom: 20px;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+
+        img {
+            max-width: 100px;
+            max-height: 100px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+        h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin: 5px 0;
+        }
+
+        p img {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<input type="file" id="input" />
+<div id="results"></div>
+
+<script>
+    var input = document.getElementById('input');
+    input.addEventListener('change', function() {
+        readXlsxFile(input.files[0]).then(function(rows) {
+            const resultsDiv = document.getElementById('results');
+
+            // Definer korrekte kolonneindekser
+            const columnIndexes = {
+                forNavn: 2,
+                etterNavn: 3,
+                alder: 4,
+                bildet: 7,
+                by: 8
+            };
+
+            // 1. Skriv ut alle elevnavnene på skjermen
+            resultsDiv.innerHTML += "<h3>Elever på skolen:</h3>";
+            rows.slice(1).forEach(row => {
+                const navn = `${row[columnIndexes.forNavn]} ${row[columnIndexes.etterNavn]}`;
+                resultsDiv.innerHTML += `<p>${navn}</p>`;
+            });
+
+            // 2. Se bilder av alle i skolen på skjermen
+            resultsDiv.innerHTML += "<h3>Bilder av alle i skolen:</h3>";
+            rows.slice(1).forEach(row => {
+                resultsDiv.innerHTML += `<img src="${row[columnIndexes.bildet]}" alt="${row[columnIndexes.forNavn]} ${row[columnIndexes.etterNavn]}">`;
+            });
+
+            // 3. Se bildet av Elev 1 på skjermen
+            resultsDiv.innerHTML += "<h3>Bilde av Elev 1:</h3>";
+            const elev1 = rows[1];
+            resultsDiv.innerHTML += `<img src="${elev1[columnIndexes.bildet]}" alt="${elev1[columnIndexes.forNavn]} ${elev1[columnIndexes.etterNavn]}">`;
+
+            // 4. Se bilder av alle som bor i Asker på skjermen
+            resultsDiv.innerHTML += "<h3>Bilder av elever som bor i Asker:</h3>";
+            const askerStudents = rows.slice(1).filter(row => row[columnIndexes.by] && row[columnIndexes.by].toLowerCase() === 'asker');
+            askerStudents.forEach(row => {
+                resultsDiv.innerHTML += `<img src="${row[columnIndexes.bildet]}" alt="${row[columnIndexes.forNavn]} ${row[columnIndexes.etterNavn]}">`;
+            });
+
+            // 5. Se bilder og navn av alle som er 15 år gamle på skolen
+            resultsDiv.innerHTML += "<h3>Bilder og navn av elever som er 15 år gamle:</h3>";
+            const fifteenYearOlds = rows.slice(1).filter(row => row[columnIndexes.alder] === 15);
+            fifteenYearOlds.forEach(row => {
+                resultsDiv.innerHTML += `<p>${row[columnIndexes.forNavn]} ${row[columnIndexes.etterNavn]} - <img src="${row[columnIndexes.bildet]}" alt="${row[columnIndexes.forNavn]} ${row[columnIndexes.etterNavn]}"></p>`;
+            });
+
+            // 6. Finn den eldste i klassen og vis fornavn, etternavn og alder på skjermen
+            resultsDiv.innerHTML += "<h3>Den eldste i klassen:</h3>";
+            const oldestStudent = rows.slice(1).reduce((prev, current) => (prev[columnIndexes.alder] > current[columnIndexes.alder]) ? prev : current);
+            resultsDiv.innerHTML += `<p>Navn: ${oldestStudent[columnIndexes.forNavn]} ${oldestStudent[columnIndexes.etterNavn]}, Alder: ${oldestStudent[columnIndexes.alder]}</p>`;
+        });
+    });
+</script>
+
+</body>
+</html>
